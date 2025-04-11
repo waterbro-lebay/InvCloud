@@ -7,13 +7,15 @@ const ReservationItemLockSchema = new mongoose.Schema(
       required: true,
     },
     item_id: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       required: true,
     },
     quantity_locked: {
       type: Number,
       required: true,
     },
+    activity_date: { type: Date, required: true }, // ⭐ 活動 / 出貨日期
+    dock_id: { type: mongoose.Schema.Types.ObjectId }, // ⭐ 綁定碼頭
   },
   {
     timestamps: true,

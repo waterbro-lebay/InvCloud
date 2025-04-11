@@ -7,7 +7,7 @@ const ReservationItemSchema = new mongoose.Schema(
       required: true,
     },
     item_id: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       required: true,
     },
     quantity: {
@@ -23,6 +23,7 @@ const ReservationItemSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    strict: false,
   }
 );
 

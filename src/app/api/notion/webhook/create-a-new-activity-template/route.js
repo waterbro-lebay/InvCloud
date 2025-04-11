@@ -18,6 +18,7 @@ export async function POST(request) {
   //   console.log("data", data);
   const pageId = data.id;
 
+  // 取得 pageId 的 children
   const children = await notion.blocks.children.list({
     block_id: pageId,
   });
@@ -36,36 +37,42 @@ export async function POST(request) {
   ).id;
   //   console.log("newDatabaseId", newDatabaseId);
 
-  Promise.all(
-    activityTemplate.packages.map(async (activityTemplatePackage) => {
-      await notion.pages.create({
-        parent: {
-          type: "database_id",
-          database_id: newDatabaseId,
-        },
-        properties: {
-          項目: {
-            title: [
-              {
-                type: "text",
-                text: {
-                  content: `${activityTemplatePackage.package_name}`,
-                },
+  for (const activityTemplatePackage of activityTemplate.packages) {
+    await notion.pages.create({
+      parent: {
+        type: "database_id",
+        database_id: newDatabaseId,
+      },
+      properties: {
+        項目: {
+          title: [
+            {
+              type: "text",
+              text: {
+                content: `${activityTemplatePackage.package_name}`,
               },
-            ],
-          },
-          物品清單總覽: {
-            relation: activityTemplatePackage.package_items.map((item) => ({
-              id: item.item_id,
-            })),
-          },
-          數量: {
-            number: 0,
+            },
+          ],
+        },
+        物品清單總覽: {
+          relation: activityTemplatePackage.package_items.map((item) => ({
+            id: item.item_id.replace(/-/g, ""), // 清掉 dash（可選）
+          })),
+        },
+        數量: {
+          number: 0,
+        },
+        類別: {
+          select: {
+            name: activityTemplatePackage.package_type,
           },
         },
-      });
-    })
-  );
+      },
+    });
+
+    // 可選：延遲 300ms，讓 Notion 更穩定
+    await new Promise((r) => setTimeout(r, 300));
+  }
 
   return NextResponse.json({ message: "success" });
 }

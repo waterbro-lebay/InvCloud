@@ -41,6 +41,8 @@ export async function GET(request) {
       startCursor = response.next_cursor;
     }
 
+    let count = 0;
+
     // 使用 upsert 更新或新增每一筆資料
     for (const item of itemsProperties) {
       await WarehouseItem.updateOne(
@@ -48,6 +50,8 @@ export async function GET(request) {
         { $set: item }, // 更新全部欄位
         { upsert: true } // 沒有就新增
       );
+      count++;
+      console.log("跑到第幾個", count, "/", itemsProperties.length);
     }
 
     return NextResponse.json({

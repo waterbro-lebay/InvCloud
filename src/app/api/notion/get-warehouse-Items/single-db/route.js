@@ -8,7 +8,7 @@ import ActivityTemplate from "@/models/ActivityTemplate";
 export async function GET(request) {
   // https://www.notion.so/ubuntu-teambuilding/dd6131e4935c4c619b9e363b371071d4?v=6e2069f5c6ae4f978187354b3840163a&pvs=4
   // https://www.notion.so/ubuntu-teambuilding/f2bc7d35e2cc485b92a6ff0525530cc9?v=1176e97797ce47f69761c649d92b899e&pvs=4
-  const databaseId = "f2bc7d35e2cc485b92a6ff0525530cc9";
+  const databaseId = "1d0e26995c8680c79849fa1c7650b0a8";
 
   try {
     await connectDB();
@@ -34,10 +34,11 @@ export async function GET(request) {
       const newPackages = results.map((page) => {
         // db name
         const properties = page.properties;
-        // console.log("properties", properties);
+        console.log("properties", properties);
         return {
           package_id: page.id.replace(/-/g, ""),
           package_name: properties["項目"]?.title[0]?.plain_text,
+          package_type: properties["類別"]?.select?.name,
           package_items: properties["物品清單總覽"]?.relation.map((item) => {
             return {
               item_id: item.id.replace(/-/g, ""),

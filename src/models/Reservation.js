@@ -3,8 +3,9 @@ import mongoose from "mongoose";
 const ReservationSchema = new mongoose.Schema(
   {
     activity_id: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       required: true,
+      unique: true,
     },
     version: {
       type: Number,
@@ -16,7 +17,7 @@ const ReservationSchema = new mongoose.Schema(
     },
     created_by: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
+      // required: true,
     },
   },
   {

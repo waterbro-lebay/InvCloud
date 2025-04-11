@@ -27,6 +27,7 @@ const ActivityTemplateSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    strict: false,
   }
 );
 

@@ -7,7 +7,7 @@ import Task from "@/models/Task";
 import notion from "@/lib/notion";
 import { sendMessageToLine } from "@/lib/lineMessage";
 
-import { queryDeepSeek } from "@/lib/deepseek/api";
+import { queryDeepSeek, queryDeepSeekType } from "@/lib/deepseek/api";
 
 // Redis key 前綴
 const REDIS_PREFIX = {
@@ -23,8 +23,15 @@ export async function POST(request) {
 
     const event = payload.events?.[0];
     let msg = event?.message?.text;
+    let _type = "";
 
-    if (!msg || !msg.startsWith("+")) {
+    // console.log("event", event);
+
+    if (!event) {
+      return NextResponse.json({ message: "OK" });
+    }
+
+    if (!msg.startsWith("+") && !msg.startsWith("-")) {
       console.log("Non-task message.", event.source.userId);
       // 提示用戶輸入格式
       // await sendMessageToLine(
@@ -34,12 +41,22 @@ export async function POST(request) {
       const result = await queryDeepSeek(msg);
       console.log("result", result);
       msg = result;
+      _type = null;
+    } else if (msg.startsWith("-")) {
+      const [_, type, quantity] = msg.split("-");
+      // 用 ai 判斷是哪一種 type
+      const result = await queryDeepSeekType(type);
+      console.log("result", result);
+      _type = result;
+      msg = null;
     }
 
-    const task = parseTaskMessage(msg); // { title, deadline, priority }
-    const taskToDB = await saveTaskToDB(task);
-    // console.log("taskToDB", taskToDB);
-    await pushTaskToNotion(taskToDB);
+    if (!_type && msg) {
+      const task = parseTaskMessage(msg); // { title, deadline, priority }
+      const taskToDB = await saveTaskToDB(task);
+      // console.log("taskToDB", taskToDB);
+      await pushTaskToNotion(taskToDB);
+    }
 
     // 處理 LINE 事件
     // for (const event of payload.events) {

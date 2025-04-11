@@ -35,3 +35,36 @@ export async function queryDeepSeek(prompt, model = "deepseek-chat") {
     throw error;
   }
 }
+
+export async function queryDeepSeekType(prompt, model = "deepseek-chat") {
+  const test_ai_type = ["摺疊桌", "底版", "奇異筆"];
+  const prefix = `
+    請幫我判斷傳入的文字可能屬於以下何種類型：
+    類型：${test_ai_type.join("\n")}
+    例如：
+    1. 摺疊桌
+    2. 底版
+    3. 奇異筆
+    你只需要回傳是何種類型，不需要回傳其他文字。
+    `;
+  try {
+    const response = await axios.post(
+      DEEPSEEK_API_URL,
+      {
+        model,
+        messages: [{ role: "user", content: `${prefix}${prompt}` }],
+        temperature: 0.7,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${DEEPSEEK_API_KEY}`,
+        },
+      }
+    );
+    return response.data.choices[0].message.content;
+  } catch (error) {
+    console.error("Error calling DeepSeek API:", error);
+    throw error;
+  }
+}
