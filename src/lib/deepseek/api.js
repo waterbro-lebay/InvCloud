@@ -68,3 +68,63 @@ export async function queryDeepSeekType(prompt, model = "deepseek-chat") {
     throw error;
   }
 }
+
+// utils/queryIntent.js
+
+export async function queryIntent(text) {
+  // 今年
+  const year = new Date().getFullYear();
+  const prompt = `
+請根據以下使用者輸入，判斷其意圖類型，只回傳 JSON 格式即可。
+
+意圖只能是以下其中一種：
+- create_task
+- delete_task
+- update_task
+- query_task
+- list_tasks
+- complete_task
+
+如果輸入中包含任務相關資訊（如任務內容、截止日、優先度），請一起解析成 task 欄位。
+
+使用者輸入：「${text}」
+年份：${year}
+
+請回傳 JSON 物件，例如：
+{
+  "intent": "create_task",
+  "task": {
+    "title": "交報告",
+    "deadline": "2025-04-17",
+    "priority": "高"
+  }
+}
+如果無法解析 task，可省略該欄位。
+`;
+
+  const res = await fetch("https://api.deepseek.com/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_DEEPSEEK_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "deepseek-chat",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.3,
+    }),
+  });
+
+  const data = await res.json();
+  let raw = data.choices?.[0]?.message?.content?.trim() || "{}";
+
+  // 移除 markdown 的 ```json 或 ``` 標記
+  raw = raw.replace(/^```json\s*|```$/g, "").trim();
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    console.log("JSON parse error:", e.message);
+    console.warn("JSON parse error:", raw);
+    return { intent: "other" };
+  }
+}

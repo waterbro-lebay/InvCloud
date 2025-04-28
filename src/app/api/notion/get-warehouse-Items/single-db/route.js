@@ -8,6 +8,7 @@ import ActivityTemplate from "@/models/ActivityTemplate";
 export async function GET(request) {
   // https://www.notion.so/ubuntu-teambuilding/dd6131e4935c4c619b9e363b371071d4?v=6e2069f5c6ae4f978187354b3840163a&pvs=4
   // https://www.notion.so/ubuntu-teambuilding/f2bc7d35e2cc485b92a6ff0525530cc9?v=1176e97797ce47f69761c649d92b899e&pvs=4
+  // https://www.notion.so/ubuntu-teambuilding/1d0e26995c8680c79849fa1c7650b0a8?v=1d0e26995c8681bd8663000c4aeaa5a0&pvs=4
   const databaseId = "1d0e26995c8680c79849fa1c7650b0a8";
 
   try {

@@ -27,7 +27,7 @@ export async function POST(request) {
     (block) => block.type === "child_database"
   );
 
-  console.log("inlineDatabases", inlineDatabases);
+  // console.log("inlineDatabases", inlineDatabases);
 
   //   // 把活動模板資料庫的資料同步到 notion page 中
 

@@ -7,7 +7,11 @@ import Task from "@/models/Task";
 import notion from "@/lib/notion";
 import { sendMessageToLine } from "@/lib/lineMessage";
 
-import { queryDeepSeek, queryDeepSeekType } from "@/lib/deepseek/api";
+import {
+  queryDeepSeek,
+  queryDeepSeekType,
+  queryIntent,
+} from "@/lib/deepseek/api";
 
 // Redis key 前綴
 const REDIS_PREFIX = {
@@ -20,67 +24,57 @@ const REDIS_EXPIRE = 300;
 export async function POST(request) {
   try {
     const payload = await request.json();
-
     const event = payload.events?.[0];
-    let msg = event?.message?.text;
-    let _type = "";
 
-    // console.log("event", event);
-
-    if (!event) {
-      return NextResponse.json({ message: "OK" });
+    if (!event || event.type !== "message" || event.message.type !== "text") {
+      return NextResponse.json({ message: "Not a text message." });
     }
 
-    if (!msg.startsWith("+") && !msg.startsWith("-")) {
-      console.log("Non-task message.", event.source.userId);
-      // 提示用戶輸入格式
-      // await sendMessageToLine(
-      //   event.source.userId,
-      //   "請輸入格式：\n+寫報告｜3/25｜高"
-      // );
-      const result = await queryDeepSeek(msg);
-      console.log("result", result);
-      msg = result;
-      _type = null;
-    } else if (msg.startsWith("-")) {
-      const [_, type, quantity] = msg.split("-");
-      // 用 ai 判斷是哪一種 type
-      const result = await queryDeepSeekType(type);
-      console.log("result", result);
-      _type = result;
-      msg = null;
+    const userId = event.source.userId;
+    const text = event.message.text.trim();
+
+    // 如果是指令（如 /bind /status），讓舊邏輯處理
+    if (text.startsWith("/")) {
+      await handleMessage(event);
+      return NextResponse.json({ message: "Command processed." });
     }
 
-    if (!_type && msg) {
-      const task = parseTaskMessage(msg); // { title, deadline, priority }
-      const taskToDB = await saveTaskToDB(task);
-      // console.log("taskToDB", taskToDB);
-      await pushTaskToNotion(taskToDB);
+    // 透過 AI 判斷是否為任務新增需求
+    const intentResult = await queryIntent(text);
+
+    console.log("INTENT：", intentResult);
+
+    const task = intentResult.task;
+
+    switch (intentResult.intent) {
+      case "create_task":
+        // 👉 你可以用 intentResult.task 來建立 Notion 任務
+        task["status"] = "未開始";
+        task["source"] = "LINE";
+        break;
+      case "query_task":
+        // 👉 查 Notion 上的資料傳回來
+        break;
+      case "greeting":
+        // 👉 回傳一段歡迎語
+        break;
+      case "complete_task":
+        // 👉 完成任務
+        task["status"] = "已完成";
+        task["source"] = "LINE";
+        // console.log("complete_task", task);
+        break;
+      default:
+        // 👉 不認識的就 friendly 回話
+        break;
     }
+    const taskToDB = await saveTaskToDB(task);
+    await pushTaskToNotion(taskToDB);
+    // const result = await queryDeepSeek(text); // 回傳應為可直接存入的 task 描述文字
 
-    // 處理 LINE 事件
-    // for (const event of payload.events) {
-    //   if (event.type === "follow") {
-    //     // 用戶加入好友
-    //     await handleFollow(event);
-    //   } else if (event.type === "message" && event.message.type === "text") {
-    //     // 處理文字訊息
-    //     await handleMessage(event);
-    //   }
-    //   else if (event.type === "join") {
-    //     // 機器人被加入群組
-    //     await handleJoinGroup(event);
-    //   } else if (event.type === "leave") {
-    //     // 機器人被移出群組
-    //     await handleLeaveGroup(event);
-    //   } else if (event.type === "postback") {
-    //     // 處理 postback 事件
-    //     console.log("postback");
-    //     await handlePostback(event);
-    //   }
-    // }
-
-    return NextResponse.json({ message: "OK" });
+    // 回覆用戶新增成功（可依照群組或個人不同回應）
+    // await sendMessageToLine(userId, `✅ 已新增任務：${task.title}`);
+    return NextResponse.json({ message: "Task added." });
   } catch (error) {
     console.error("LINE Webhook Error:", error);
     return NextResponse.json(
@@ -401,7 +395,9 @@ function parseTaskMessage(text) {
   // 假設格式為「+寫報告｜3/25｜高」
   const [_, body] = text.split("+");
   const [title, rawDate, priority, status] = body.split("｜");
-  const deadline = new Date(`2025/${rawDate}`);
+  // 今年
+  const year = new Date().getFullYear();
+  const deadline = new Date(`${year}/${rawDate}`);
 
   return {
     title: title.trim(),

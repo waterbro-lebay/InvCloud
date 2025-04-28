@@ -1,11 +1,13 @@
 // 發送文字訊息到 LINE
 async function sendMessageToLine(lineUserId, messageText) {
+  console.log("lineUserId", lineUserId);
+  console.log("messageText", messageText);
   try {
     const response = await fetch("https://api.line.me/v2/bot/message/push", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.NEXT_LINE_CHANNEL_ACCESS_TOKEN}`,
+        Authorization: `Bearer YgHqOO6dO2qkLoUdqWR/NUxI3iMiabk2wqRXpwZjLHXGeRurKgMOeo1wVECp6lvZWa5YsfRybw4BL5t0hHWhOLH1NZO7XtljEi4ZrIk1XrJU97RMyFK9VaKu7Mwm8zW2jfafQ1OSZICuDQpAuHsZTgdB04t89/1O/w1cDnyilFU=`,
       },
       body: JSON.stringify({
         to: lineUserId,
@@ -19,8 +21,14 @@ async function sendMessageToLine(lineUserId, messageText) {
     });
 
     const data = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        `🚨 LINE API 回應錯誤: ${JSON.stringify(data)}, to: ${lineUserId}`
+      );
+    }
     console.log("✅ LINE 文字訊息發送成功:", data);
   } catch (error) {
+    console.log("error", error);
     console.error("❌ LINE 文字訊息發送失敗:", error);
   }
 }
