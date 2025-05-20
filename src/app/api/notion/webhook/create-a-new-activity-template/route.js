@@ -5,38 +5,35 @@ import ActivityTemplate from "@/models/ActivityTemplate";
 
 export async function POST(request) {
   const payload = await request.json();
-  // header
   const btn_id = request.headers.get("btn_id");
-  //   console.log("btn_id", btn_id);
 
   await connectDB();
   const activityTemplate = await ActivityTemplate.findById(btn_id);
-  //   console.log("activityTemplate", activityTemplate);
   const btn_name = activityTemplate.name;
 
   const data = payload.data;
-  //   console.log("data", data);
   const pageId = data.id;
 
-  // 取得 pageId 的 children
-  const children = await notion.blocks.children.list({
-    block_id: pageId,
-  });
-
+  // 取得 page 底下的所有 blocks（找出子資料庫）
+  const children = await notion.blocks.children.list({ block_id: pageId });
   const inlineDatabases = children.results.filter(
     (block) => block.type === "child_database"
   );
 
-  // console.log("inlineDatabases", inlineDatabases);
-
-  //   // 把活動模板資料庫的資料同步到 notion page 中
-
-  // 從 inlineDatabases 中找到 btn_name 對應的 database
-  const newDatabaseId = inlineDatabases.find(
+  const matchedDb = inlineDatabases.find(
     (block) => block.child_database.title === btn_name
-  ).id;
-  //   console.log("newDatabaseId", newDatabaseId);
+  );
 
+  if (!matchedDb) {
+    return NextResponse.json(
+      { error: "找不到對應的子資料庫" },
+      { status: 404 }
+    );
+  }
+
+  const newDatabaseId = matchedDb.id;
+
+  // 建立 pages（每筆 template package → 建立成一筆資料庫資料）
   for (const activityTemplatePackage of activityTemplate.packages) {
     await notion.pages.create({
       parent: {
@@ -54,11 +51,11 @@ export async function POST(request) {
             },
           ],
         },
-        物品清單總覽: {
-          relation: activityTemplatePackage.package_items.map((item) => ({
-            id: item.item_id.replace(/-/g, ""), // 清掉 dash（可選）
-          })),
-        },
+        // 物品清單總覽: {
+        //   relation: activityTemplatePackage.package_items.map((item) => ({
+        //     id: item.item_id.replace(/-/g, ""),
+        //   })),
+        // },
         數量: {
           number: 0,
         },
@@ -70,9 +67,22 @@ export async function POST(request) {
       },
     });
 
-    // 可選：延遲 300ms，讓 Notion 更穩定
+    // 為了 Notion API 穩定性，加個小 delay
     await new Promise((r) => setTimeout(r, 300));
   }
+
+  // ✅ 資料寫入完成後，將資料庫名稱更新為「原名（完成）」
+  await notion.databases.update({
+    database_id: newDatabaseId,
+    title: [
+      {
+        type: "text",
+        text: {
+          content: `${btn_name}（列表完成）`,
+        },
+      },
+    ],
+  });
 
   return NextResponse.json({ message: "success" });
 }

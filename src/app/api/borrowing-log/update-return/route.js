@@ -34,7 +34,7 @@ export async function PUT(req) {
       {
         $set: {
           item_id: itemData.item_id,
-          item_notion_page_id: itemData.item_notion_page_id,
+          item_notion_page_id: itemData.item_notion_page_id || "1",
           week_end_date: new Date(weekRange.end),
           total_out: itemData.total_out,
           total_return: actual_return_quantity,
@@ -59,7 +59,7 @@ export async function PUT(req) {
           DamageRecord.create({
             item_name: itemName,
             item_id: itemData.item_id,
-            item_notion_page_id: itemData.item_notion_page_id,
+            item_notion_page_id: itemData.item_notion_page_id || "1",
             quantity: damage.quantity,
             description: damage.description,
             type: damage.type,

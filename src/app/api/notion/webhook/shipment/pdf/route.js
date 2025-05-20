@@ -25,7 +25,7 @@ export async function POST(req) {
   try {
     await connectDB();
 
-    const url = `https://8814-122-116-236-8.ngrok-free.app/api/notion/webhook/shipment/pdf/output?activityId=${removeHyphen(
+    const url = `https://8b79-122-116-236-8.ngrok-free.app/api/notion/webhook/shipment/pdf/output?activityId=${removeHyphen(
       activityId
     )}`;
     // const url = `https://8814/output?activityId=${activityId}`;

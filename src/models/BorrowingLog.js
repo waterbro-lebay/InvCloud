@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 
 const BorrowingItemSchema = new mongoose.Schema(
   {
-    item_id: { type: mongoose.Schema.Types.ObjectId, ref: "WarehouseItem" },
+    item_id: String,
     item_name: String,
     item_notion_page_id: String,
     item_type: String,

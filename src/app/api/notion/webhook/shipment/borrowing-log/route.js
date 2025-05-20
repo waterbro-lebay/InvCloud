@@ -39,7 +39,7 @@ export async function POST(req) {
       },
       {
         $group: {
-          _id: "$item_id",
+          _id: "$item_name",
           item_name: { $first: "$item_name" },
           item_notion_page_id: { $first: "$item_notion_page_id" },
           quantity: { $sum: "$quantity" },
@@ -56,7 +56,7 @@ export async function POST(req) {
       item_notion_page_id: item.item_notion_page_id,
       planned_quantity: item.quantity,
     }));
-    // console.log("items", items);
+    console.log("items", items);
 
     // 查 WAREHOUSE 的資料 by reservationItemLock.itemId
 
