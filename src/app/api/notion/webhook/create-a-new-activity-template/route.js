@@ -4,10 +4,12 @@ import connectDB from "@/lib/mongodb";
 import ActivityTemplate from "@/models/ActivityTemplate";
 
 export async function POST(request) {
+  const { searchParams } = new URL(request.url);
+  const btn_id = searchParams.get("id");
   const payload = await request.json();
-  const btn_id = request.headers.get("btn_id");
-  console.log("request.headers", request.headers);
-  console.log("btn_id", btn_id);
+  // const btn_id = request.headers.get("btn_id");
+  // console.log("request.headers", request.headers);
+  // console.log("btn_id", btn_id);
 
   await connectDB();
   const activityTemplate = await ActivityTemplate.findById(btn_id);
