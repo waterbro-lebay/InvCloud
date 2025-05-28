@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import connectDB from "@/lib/mongodb";
 import ReservationItemLock from "@/models/ReservationItemLock";
+import notion from "@/lib/notion.js";
 
 import { removeHyphen } from "@/lib/notion/removeHyphen.js";
 import { getNotionPage } from "@/lib/notionPage";
@@ -81,6 +82,23 @@ export async function POST(req) {
     }
 
     console.log("完成");
+    await notion.pages.update({
+      page_id: pageId,
+      properties: {
+        預約狀態: {
+          rich_text: [
+            {
+              type: "text",
+              text: {
+                content: `更新預約單：${new Date().toLocaleString("zh-TW", {
+                  timeZone: "Asia/Taipei",
+                })}`,
+              },
+            },
+          ],
+        },
+      },
+    });
 
     return NextResponse.json({
       message: "已完成預約流程",

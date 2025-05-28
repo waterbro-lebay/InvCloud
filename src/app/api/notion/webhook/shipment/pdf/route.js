@@ -33,7 +33,7 @@ export async function POST(req) {
     await notion.pages.update({
       page_id: pageId,
       properties: {
-        預約訊息: {
+        下載pdf: {
           url: url,
         },
       },

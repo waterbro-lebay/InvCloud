@@ -4,6 +4,7 @@ import connectDB from "@/lib/mongodb";
 import BorrowingLog from "@/models/BorrowingLog";
 import WarehouseItem from "@/models/WarehouseItem";
 import ReservationItemLock from "@/models/ReservationItemLock";
+import notion from "@/lib/notion.js";
 
 import { removeHyphen } from "@/lib/notion/removeHyphen.js";
 import { getNotionPage } from "@/lib/notionPage";
@@ -79,6 +80,23 @@ export async function POST(req) {
       })),
     });
     // console.log("log", log);
+    await notion.pages.update({
+      page_id: pageId,
+      properties: {
+        預約狀態: {
+          rich_text: [
+            {
+              type: "text",
+              text: {
+                content: `確認借出物資：${new Date().toLocaleString("zh-TW", {
+                  timeZone: "Asia/Taipei",
+                })}`,
+              },
+            },
+          ],
+        },
+      },
+    });
 
     return NextResponse.json({ message: "Borrowing log created" });
   } catch (err) {
