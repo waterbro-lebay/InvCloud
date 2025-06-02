@@ -34,7 +34,8 @@ export async function GET(request) {
   // https://www.notion.so/ubuntu-teambuilding/1a7e26995c86808aaad7eaf7043f0f9e?v=1a7e26995c86815f8d9a000c56fe0338&pvs=4
   // https://www.notion.so/ubuntu-teambuilding/1a7e26995c8680099a5efd6118f6898d?v=1a7e26995c868179943c000cf64daeb3&pvs=4
   // https://www.notion.so/ubuntu-teambuilding/1a7e26995c8680879964f7ac7e115d5a?v=1a7e26995c8681d398b7000c94358c96&pvs=4
-  const databaseId = "1a7e26995c8680879964f7ac7e115d5a";
+  // https://www.notion.so/ubuntu-teambuilding/1f3e26995c8680edbc94d04ea63f811b?v=1f3e26995c86817fbc9f000ce458a919&pvs=4
+  const databaseId = "1f3e26995c8680edbc94d04ea63f811b";
 
   try {
     await connectDB();

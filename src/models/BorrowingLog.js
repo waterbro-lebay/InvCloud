@@ -23,6 +23,7 @@ const BorrowingItemSchema = new mongoose.Schema(
 const BorrowingLogSchema = new mongoose.Schema({
   activity_id: { type: String, required: true },
   activity_name: { type: String, required: true },
+  planner: { type: String, required: true },
   reserved_date: { type: Date, required: true },
   dock: Number,
   items: [BorrowingItemSchema],

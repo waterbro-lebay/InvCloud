@@ -69,6 +69,7 @@ export async function POST(req) {
     const log = await BorrowingLog.create({
       activity_id: removeHyphen(activityId),
       activity_name: activityName,
+      planner: planningName,
       reserved_date: new Date(reserved_date).toISOString(),
       dock: 0,
       items: items.map((item) => ({
