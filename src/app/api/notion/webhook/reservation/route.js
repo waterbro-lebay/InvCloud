@@ -48,6 +48,7 @@ export async function POST(req) {
       const quantity = row["數量"];
       const type = row["類別"];
       const item_id = row["物品清單總覽"]?.replace(/-/g, "");
+      const note = row["備註"];
       const dock = 0;
 
       // if (!item_id && quantity === undefined) {
@@ -71,6 +72,7 @@ export async function POST(req) {
         item_name: itemName,
         item_type: type,
         item_notion_page_id: item_id,
+        note: note,
         quantity,
         dock,
         reserved_date,

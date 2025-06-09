@@ -45,6 +45,7 @@ export async function POST(req) {
           item_notion_page_id: { $first: "$item_notion_page_id" },
           quantity: { $sum: "$quantity" },
           item_type: { $first: "$item_type" },
+          note: { $first: "$note" },
         },
       },
     ]);
@@ -56,6 +57,7 @@ export async function POST(req) {
       item_type: item.item_type,
       item_notion_page_id: item.item_notion_page_id,
       planned_quantity: item.quantity,
+      note: item.note,
     }));
     console.log("items", items);
 
@@ -77,7 +79,7 @@ export async function POST(req) {
         actual_out_quantity: item.planned_quantity,
         actual_return_quantity: 0,
         status: "short_return",
-        note: "",
+        note: item.note,
       })),
     });
     // console.log("log", log);
